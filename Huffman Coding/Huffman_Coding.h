@@ -30,6 +30,7 @@ public:
 	Huffman_CodingTree(unsigned int r = 2); // 构造函数，默认为2进制霍夫曼，也可更改为其他
 	~Huffman_CodingTree(); // 析构函数
 
+	bool change_codingSystem(unsigned int r = 2); // 改变编码进制
 	bool add_Node(CodingNode* node); // 添加待编码节点，参数为节点的指针
 	bool add_Node(string content, double probility); // 添加待编码节点，参数为节点的字符（串）和概率。将自动转换为节点并存入
 	bool remove_Node(CodingNode* node); // 移除某个节点
@@ -43,7 +44,9 @@ public:
 	bool output_para(); // 输出参数：熵、平均码长、编码效率
 
 private:
-	unsigned int R;
+	unsigned int R; // 存储进制信息
+	bool finished = false; // 是否已完成编码
+	double totle_probility = 0; // 存储概率总和
 	priority_queue<CodingNode*, vector<CodingNode*>, CodingNode_cmp>Node_ptr{}; // 存储待编码节点的优先队列，用于编码
 	vector<CodingNode*>Node_vec; // 存储待编码节点原始信息的向量，用于初始化优先队列，以及最终返回信息
 
@@ -60,11 +63,23 @@ Huffman_CodingTree::Huffman_CodingTree(unsigned int r)
 		cout << endl << "严重错误！！错误的霍夫曼编码进制：" << r << "\n\tHuffman编码的进制数应该大于等于2" << endl;
 	}
 	R = r;
+	finished = false;
 }
 
 Huffman_CodingTree::~Huffman_CodingTree()
 {
 	cout << endl << "***已销毁编码树" << endl;
+}
+
+inline bool Huffman_CodingTree::change_codingSystem(unsigned int r)
+{
+	if (r < 2) { // 如果进制数小于2，报错
+		cout << endl << "严重错误！！错误的霍夫曼编码进制：" << r << "\n\tHuffman编码的进制数应该大于等于2" << endl<<"没有改变编码进制！！仍为： " << R << " 进制进制" << endl;
+		return false;
+	}
+	cout << endl << "***已更改编码树，编码为 " << r << " 进制Huffman编码" << endl;
+	R = r;
+	return true;
 }
 
 inline bool Huffman_CodingTree::add_Node(CodingNode* node)
@@ -76,6 +91,7 @@ inline bool Huffman_CodingTree::add_Node(CodingNode* node)
 	if (Node_exist(node)==NULL) { // 如果节点不存在，则允许添加
 		node->probility[1] = node->probility[0]; // 初始化用于编码的概率
 		Node_vec.push_back(node);
+		totle_probility += node->probility[0];
 		cout << "已添加字符串\n\t" << node->content << "概率为" << node->probility[0] << endl;
 		return true;
 	}
@@ -107,6 +123,7 @@ inline bool Huffman_CodingTree::remove_Node(CodingNode* node)
 	for (current_node = Node_vec.begin(); current_node != Node_vec.end(); current_node++) { // 搜索节点，存在则删除，不存在则返回false
 		if ((*current_node)->content == node->content and (*current_node)->probility[0] == node->probility[0]) {
 			Node_vec.erase(current_node);
+			totle_probility -= (*current_node)->probility[0];
 			return true;
 		}
 	}
@@ -143,13 +160,14 @@ inline CodingNode* Huffman_CodingTree::Node_exist(CodingNode* node)
 
 inline bool Huffman_CodingTree::start_coding()
 {
+	finished = false;
 	if (R < 2) { // 判断进制是否非法
 		cout << endl << "错误！！Huffman编码的进制应大于2，而设定的编码为：" << R << endl;
 		return false;
 	}
 
-	if (false) { // 判断节点概率之和是否等于1**************************************************************************************
-		;
+	if (float(totle_probility) != 1) { // 如果概率之和不为1，提示警告信息
+		cout << endl << "警告！！概率之和不为1，编码仍将继续，但相关参数（熵、平均码长、编码效率）将出现较大偏差" << endl << "如果这不符合预期，请检查各节点，现有节点概率之和为：" << totle_probility << endl;
 	}
 
 	cout << endl << "***开始编码" << endl;
@@ -189,12 +207,18 @@ inline bool Huffman_CodingTree::start_coding()
 	}
 	auto end_time = chrono::duration_cast<chrono::microseconds>(chrono::system_clock::now().time_since_epoch());
 	cout << endl << "***编码结束，耗时" << (end_time - start_time).count()/1000.0 << " 毫秒" << endl;
+
+	finished = true;
 	return true;
 }
 
 inline vector<CodingNode*> Huffman_CodingTree::get_coding()
 {
 	vector<CodingNode*> Nodes;
+	if (finished == false) {
+		cout << endl << "没有编码，请检查是否调用start_coding()方法，或检查该方法是否返回错误信息" << endl;
+		return Nodes;
+	}
 	CodingNode* Node_t = Node_ptr.top();
 	while (Node_t != NULL)
 	{
@@ -208,6 +232,10 @@ inline vector<CodingNode*> Huffman_CodingTree::get_coding()
 
 inline bool Huffman_CodingTree::output_coding()
 {
+	if (finished == false) {
+		cout << endl << "没有编码，请检查是否调用start_coding()方法，或检查该方法是否返回错误信息" << endl;
+		return false;
+	}
 	for (auto i : get_coding()) {
 		cout << "字符（串）：" << i->content << "  概率：" << i->probility[0] << "  编码：" << i->current_coding << endl;
 	}
@@ -217,6 +245,10 @@ inline bool Huffman_CodingTree::output_coding()
 inline vector<double> Huffman_CodingTree::get_para()
 {
 	vector<double> para;
+	if (finished == false) {
+		cout << endl << "没有编码信息，请检查是否调用start_coding()方法，或检查该方法是否返回错误信息" << endl;
+		return para;
+	}
 	long double H{ 0 }, ita{ 0 }, l{ 0 };
 	for (auto i : get_coding()) {
 		H -= i->probility[0] * log2(i->probility[0]);
@@ -231,6 +263,10 @@ inline vector<double> Huffman_CodingTree::get_para()
 
 inline bool Huffman_CodingTree::output_para()
 {
+	if (finished == false) {
+		cout << endl << "没有编码参数，请检查是否调用start_coding()方法，或检查该方法是否返回错误信息" << endl;
+		return false;
+	}
 	vector<double> pr;
 	pr = get_para();
 	cout << "熵：" << pr[0] << "  平均码长：" << pr[1] << "  编码效率：" << pr[2] * 100 << " %" << endl;

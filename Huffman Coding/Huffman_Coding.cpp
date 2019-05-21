@@ -16,5 +16,7 @@ int main(void) {
 	Huf.start_coding(); // 开始编码
 	Huf.output_coding(); // 打印字符串对应的编码
 	Huf.output_para(); // 打印熵、平均码长和编码效率
+
+	Huf.change_codingSystem(0);
 	return 0;
 }
