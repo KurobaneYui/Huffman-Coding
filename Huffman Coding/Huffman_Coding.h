@@ -265,8 +265,8 @@ inline bool Huffman_CodingTree::addCode(string code, CodingNode* node)
 
 inline CodingNode* Huffman_CodingTree::merge_Node(CodingNode* node_pre, CodingNode* node_sub)
 {
-	cout << "merging nodes: " << node_pre->content << " and " << node_sub->content << endl;
 	node_pre->probility[1] += node_sub->probility[1]; // 将第二个节点组的整体概率并入第一个节点组
+	cout << "合并两组节点: " << node_pre->content << "节点组，和" << node_sub->content << "节点组  合并后概率为：" << node_pre->probility[1] << endl;
 	CodingNode* node_f = node_pre; // 记录作为第一个元素的节点信息
 	while (true)
 	{
