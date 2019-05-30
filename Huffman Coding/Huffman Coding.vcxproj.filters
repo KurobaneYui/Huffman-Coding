@@ -18,6 +18,9 @@
     <ClInclude Include="Huffman_Coding.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="random_seq.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Huffman_Coding.cpp">

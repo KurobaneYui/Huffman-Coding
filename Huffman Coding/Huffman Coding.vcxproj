@@ -124,6 +124,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Huffman_Coding.h" />
+    <ClInclude Include="random_seq.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Huffman_Coding.cpp" />

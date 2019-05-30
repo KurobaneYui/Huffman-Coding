@@ -50,6 +50,7 @@ private:
 	priority_queue<CodingNode*, vector<CodingNode*>, CodingNode_cmp>Node_ptr{}; // 存储待编码节点的优先队列，用于编码
 	vector<CodingNode*>Node_vec; // 存储待编码节点原始信息的向量，用于初始化优先队列，以及最终返回信息
 
+	CodingNode* init_node(CodingNode* node);
 	bool vec2que(); // 节点从vector容器压入priority_queue队列
 	bool clear_priority_queue(); // 清空优先队列
 	bool addCode(string code,CodingNode* node); // 给节点添加编码新一位
@@ -89,15 +90,13 @@ inline bool Huffman_CodingTree::add_Node(CodingNode* node)
 		return false;
 	}
 	if (Node_exist(node)==NULL) { // 如果节点不存在，则允许添加
-		node->probility[1] = node->probility[0]; // 初始化用于编码的概率
-		Node_vec.push_back(node);
+		Node_vec.push_back(init_node(node)); // 初始化节点，并压入向量
 		totle_probility += node->probility[0];
 		cout << "已添加字符串\n\t" << node->content << "概率为" << node->probility[0] << endl;
 		return true;
 	}
 	else if (node->probility[0] == 0) { // 如果添加的节点概率为0，允许添加
-		node->probility[1] = node->probility[0]; // 初始化用于编码的概率
-		Node_vec.push_back(node);
+		Node_vec.push_back(init_node(node)); // 初始化节点，并压入向量
 		cout << "已添加概率为0的节点，节点对应的字符（串）不会在最后输出" << endl;
 		return true;
 	}
@@ -112,9 +111,7 @@ inline bool Huffman_CodingTree::add_Node(string content, double probility)
 	CodingNode* node = new CodingNode; // 自动完成节点信息的补全
 	node->content = content;
 	node->probility[0] = probility;
-	node->current_coding = "";
-	node->next = NULL;
-	return add_Node(node); // 尝试添加节点
+	return add_Node(init_node(node)); // 尝试添加初始化后的节点
 }
 
 inline bool Huffman_CodingTree::remove_Node(CodingNode* node)
@@ -137,6 +134,7 @@ inline bool Huffman_CodingTree::remove_Node(string content)
 	for (current_node = Node_vec.begin(); current_node != Node_vec.end(); current_node++) { // 搜索字符（串）对应的节点，存在则删除，不存在则返回
 		if ((*current_node)->content == content) {
 			Node_vec.erase(current_node);
+			totle_probility -= (*current_node)->probility[0];
 			re = true;
 		}
 	}
@@ -145,6 +143,7 @@ inline bool Huffman_CodingTree::remove_Node(string content)
 
 inline bool Huffman_CodingTree::clear_all_Node()
 {
+	totle_probility = 0;
 	Node_vec.clear(); // 清空节点vector
 	return true;
 }
@@ -273,11 +272,19 @@ inline bool Huffman_CodingTree::output_para()
 	return true;
 }
 
+inline CodingNode* Huffman_CodingTree::init_node(CodingNode* node)
+{
+	node->probility[1] = node->probility[0];
+	node->current_coding = "";
+	node->next = NULL;
+	return node;
+}
+
 inline bool Huffman_CodingTree::vec2que()
 {
 	vector<CodingNode*>::iterator current_node;
 	for (current_node = Node_vec.begin(); current_node != Node_vec.end(); current_node++) {
-		Node_ptr.push(*current_node); // 将每一个vector元素压入优先队列priority_queue
+		Node_ptr.push(init_node(*current_node)); // 将每一个vector元素恢复初始状态，并压入优先队列priority_queue
 	}
 	return true;
 }
