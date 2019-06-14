@@ -55,7 +55,8 @@ inline vector<Node> StringSeque::get_NewSequece()
 {
 	if (!can_create_seq) {
 		cout << endl << "序列长度不符合要求，请重新设定" << endl;
-		return;
+		vector<Node> t;
+		return t;
 	}
 	unsigned long long int totle{ 0 }; // 随机值总和
 	Node_seq.clear(); // 清除已有的元素
